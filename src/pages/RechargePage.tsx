@@ -45,7 +45,7 @@ export default function RechargePage() {
             onChange={e=>setPhone(e.target.value)}
             placeholder="Enter phone number" // <--- EMPTY PLACEHOLDER
             type="tel"
-            className="flex-1 bg-transparent outline-none p-3 text-sm text-gray-900 placeholder:text-gray-400"
+            className="flex-1 bg-transparent outline-none p-3 text-sm"
           />
         </div>
 
