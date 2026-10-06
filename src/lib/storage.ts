@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+himport { supabase } from './supabase';
 
 // ===== CORE USER =====
 export function getCurrentUser() {
@@ -67,7 +67,12 @@ export const createPasswordReset = (data: any) => { const all = JSON.parse(local
 export const createPasswordResetRequest = createPasswordReset;
 export const getPasswordResetStatus = (phone: string) => { try { const all = JSON.parse(localStorage.getItem('passwordResets') || '[]'); return all.find((r: any) => r.phone === phone) || null; } catch { return null; } };
 export const getPasswordResets = () => { try { return JSON.parse(localStorage.getItem('passwordResets') || '[]'); } catch { return []; } };
-export const getPasswordResetRequests = getPasswordResets;
+export const formatUGX = (amount: number | string) => {
+  const n = Number(amount) || 0;
+  return `${n.toLocaleString('en-UG')} UGX`;
+};
+export const formatCurrency = formatUGX;
+export const formatMoney = formatUGX;export const getPasswordResetRequests = getPasswordResets;
 export const approvePasswordReset = () => true;
 export const rejectPasswordReset = () => true;
 
