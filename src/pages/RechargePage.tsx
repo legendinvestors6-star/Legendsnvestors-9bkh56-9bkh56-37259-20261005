@@ -3,11 +3,12 @@ import { useState } from "react"
 export default function Recharge(){
  const [amount,setAmount]=useState("")
  const [phone,setPhone]=useState("")
+ const MIN = 30000
+ const quick = [30000,50000,100000,200000]
+ const isValid = Number(amount) >= MIN && phone.length >= 10
 
  const pay = () => {
-  if(Number(amount) < 30000){ alert("Minimum UGX 30,000"); return }
-  if(phone.length < 10){ alert("Enter phone number"); return }
-
+  if(!isValid) return
   const order = {
     id: Date.now(),
     amount: Number(amount),
@@ -15,34 +16,64 @@ export default function Recharge(){
     status: "pending",
     created_at: new Date().toISOString()
   }
-
   const all = JSON.parse(localStorage.getItem("recharge_orders") || "[]")
   all.unshift(order)
   localStorage.setItem("recharge_orders", JSON.stringify(all))
-
   window.location.href = "/recharge-status"
  }
 
  return(
-  <div className="bg-black min-h-screen p-4 text-white">
-   <div className="max-w-md mx-auto bg-[#1a1a1a] border border-[#d4af37] rounded-[20px] p-5">
-    <h1 className="text-center font-bold text-[#f8e7a0]">Recharge Account</h1>
-    <p className="text-center text-xs text-gray-400 mb-4">Min UGX 30,000</p>
+  <div className="bg-[#080808] min-h-screen p-4 pb-20">
+   <div className="max-w-md mx-auto space-y-4">
 
-    <label className="text-sm text-[#f8e7a0]">Amount</label>
-    <div className="flex bg-black border border-[#d4af37]/40 rounded-xl px-3 mt-1">
-     <span className="py-3 text-[#f8e7a0] font-bold text-sm">UGX</span>
-     <input value={amount} onChange={e=>setAmount(e.target.value)} placeholder="Enter amount" type="number" className="flex-1 bg-transparent p-3 outline-none text-white" />
+    {/* Header Card */}
+    <div className="bg-[#141414] border border-[#d4af37]/30 rounded-[18px] p-4 text-center">
+      <h1 className="text-[#f8e7a0] font-bold text-[16px]">Recharge Account</h1>
+      <p className="text-gray-500 text-xs mt-1">Enter details to continue</p>
     </div>
 
-    <label className="text-sm text-[#f8e7a0] mt-4 block">Phone</label>
-    <div className="flex bg-black border border-[#d4af37]/40 rounded-xl px-3 mt-1">
-     <span className="py-3">📱</span>
-     <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Enter phone number" type="tel" className="flex-1 bg-transparent p-3 outline-none text-white placeholder:text-gray-500" />
+    {/* Amount Card */}
+    <div className="bg-[#141414] border border-[#d4af37]/30 rounded-[18px] p-4">
+      <h2 className="text-[#f8e7a0] text-[13px] font-bold mb-3">Recharge Amount</h2>
+      <div className="flex items-center bg-[#0e0e0e] border border-[#2a2a2a] rounded-xl px-4">
+        <span className="text-[#f8e7a0] font-bold text-[13px]">UGX</span>
+        <input value={amount} onChange={e=>setAmount(e.target.value)} placeholder="Enter amount" type="number" className="flex-1 bg-transparent p-3.5 outline-none text-white placeholder:text-gray-500 text-[14px]" />
+      </div>
+      <p className="text-[#a09560] text-[11px] mt-2">Minimum: UGX 30,000 •</p>
+      <div className="flex gap-2 mt-3">
+        {quick.map(v=>(
+          <button key={v} onClick={()=>setAmount(v.toString())} className={`px-4 py-1.5 rounded-full text-xs font-bold border ${Number(amount)===v? "bg-[#f8e7a0] text-black border-[#f8e7a0]" : "bg-[#2a2515] text-[#f8e7a0] border-[#d4af37]/20"}`}>
+            {v===100000?"100k": v===200000?"200k": v===50000?"50k":"30k"}
+          </button>
+        ))}
+      </div>
     </div>
 
-    <button onClick={pay} className="w-full mt-5 bg-gradient-to-b from-[#f8e7a0] to-[#d4af37] text-black py-3 rounded-xl font-bold">Proceed to Recharge</button>
+    {/* Phone Card */}
+    <div className="bg-[#141414] border border-[#d4af37]/30 rounded-[18px] p-4">
+      <h2 className="text-[#f8e7a0] text-[13px] font-bold mb-3">Phone Number</h2>
+      <div className="flex items-center bg-[#0e0e0e] border border-[#2a2a2a] rounded-xl px-4">
+        <span className="text-[18px]">📱</span>
+        <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Enter phone number" type="tel" className="flex-1 bg-transparent p-3.5 outline-none text-white placeholder:text-gray-500 text-[14px]" />
+      </div>
+      <button disabled={!isValid} onClick={pay} className={`w-full mt-4 py-3 rounded-xl font-bold text-[14px] transition-all ${isValid? "bg-gradient-to-b from-[#f8e7a0] to-[#d4af37] text-black" : "bg-[#2a2f3a] text-gray-400"}`}>
+        Proceed to Recharge
+      </button>
+    </div>
+
+    {/* Instructions Card */}
+    <div className="bg-[#141414] border border-[#d4af37]/30 rounded-[18px] p-4">
+      <h2 className="text-[#f8e7a0] text-[13px] font-bold mb-3 flex items-center gap-2">⚠️ Recharge Instructions</h2>
+      <div className="space-y-2 text-[12px]">
+        <p className="text-gray-300"><span className="text-green-500">✅</span> Minimum recharge: <span className="text-[#f8e7a0] font-bold">UGX 30,000</span></p>
+        <p className="text-gray-400"><span className="text-green-500">✅</span> You can use <span className="text-white font-bold">any phone number</span> to deposit</p>
+        <p className="text-gray-400"><span className="text-green-500">✅</span> You can deposit multiple times</p>
+        <p className="text-gray-400"><span className="text-green-500">✅</span> Create new order for every payment</p>
+        <p className="text-gray-400">🕒 Allow 2-5 minutes after transfer</p>
+      </div>
+    </div>
+
    </div>
   </div>
  )
-   }
+                                                                                            }
