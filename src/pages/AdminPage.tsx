@@ -1,150 +1,109 @@
-import { useState } from 'react';
-import {
-  Users, CreditCard, ArrowDownToLine, BarChart3, Check, X, Search,
-  LogOut, Shield, TrendingUp, Gift, Bell, DollarSign, Trash2, Eye, Copy, Plus
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import {
-  getUsers, getRechargeOrders, getWithdrawOrders, getUserProducts,
-  approveRechargeOrder, rejectRechargeOrder, approveWithdrawOrder, rejectWithdrawOrder,
-  setCurrentUser, formatUGX, updateUser, addTransaction, getTransactions,
-  getGiftCodes, createGiftCode, deleteGiftCode,
-  getPasswordResets, approvePasswordReset, rejectPasswordReset
-} from '@/lib/storage';
-import type { GiftCode, PasswordResetRequest, User, RechargeOrder, WithdrawOrder } from '@/lib/storage';
-import { PRODUCTS } from '@/constants/products';
-
-type AdminTab = 'overview' | 'users' | 'recharge' | 'withdraw' | 'products' | 'gifts' | 'resets';
+import { useEffect, useState } from 'react';
+import { getUsers, creditUser, deductUser, getRechargeOrders, approveRechargeOrder, rejectRechargeOrder, getWithdrawOrders, approveWithdrawOrder, rejectWithdrawOrder, formatUGX } from '@/lib/storage';
 
 export default function AdminPage() {
-  const navigate = useNavigate();
-  const [tab, setTab] = useState<AdminTab>('overview');
-  const [searchQ, setSearchQ] = useState('');
-  const [refresh, setRefresh] = useState(0);
+  const [users, setUsers] = useState<any[]>([]);
+  const [recharges, setRecharges] = useState<any[]>([]);
+  const [withdraws, setWithdraws] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [amount, setAmount] = useState('');
+  const [selectedUser, setSelectedUser] = useState('');
+  const [filter, setFilter] = useState('');
 
-  // force re-read from storage on refresh
-  const users = getUsers().filter(u =>!u.isAdmin);
-  const rechargeOrders = getRechargeOrders();
-  const withdrawOrders = getWithdrawOrders();
+  async function loadAll() {
+    setLoading(true);
+    try {
+      const [u, r, w] = await Promise.all([getUsers(), getRechargeOrders(), getWithdrawOrders()]);
+      setUsers(u);
+      setRecharges(r);
+      setWithdraws(w);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  }
 
-  const pendingRecharge = rechargeOrders.filter(o => o.status === 'pending');
-  const pendingWithdraw = withdrawOrders.filter(o => o.status === 'pending');
-  const totalBalance = users.reduce((s, u) => s + u.balance, 0);
-  const totalRecharge = rechargeOrders.filter(o => o.status === 'completed').reduce((s, o) => s + o.amount, 0);
+  useEffect(() => { loadAll(); }, []);
 
-  const filteredUsers = users.filter(u =>
-    u.phone.toLowerCase().includes(searchQ.toLowerCase()) ||
-    u.id.toLowerCase().includes(searchQ.toLowerCase())
-  );
+  const handleCredit = async () => {
+    if (!selectedUser || !amount) return alert('Select user and enter amount');
+    await creditUser(selectedUser, Number(amount));
+    alert(`Credited ${formatUGX(Number(amount))} successfully! User will see it instantly on all devices.`);
+    setAmount(''); loadAll();
+  };
+  const handleDeduct = async () => {
+    if (!selectedUser || !amount) return alert('Select user and enter amount');
+    await deductUser(selectedUser, Number(amount));
+    alert(`Deducted ${formatUGX(Number(amount))} successfully!`);
+    setAmount(''); loadAll();
+  };
 
-  const passwordResets = getPasswordResets();
-  const pendingResets = passwordResets.filter(r => r.status === 'pending');
+  const filteredUsers = users.filter(u => u.phone.includes(filter) || u.id.includes(filter));
 
-  const tabs: { key: AdminTab; label: string; icon: any; badge?: number }[] = [
-    { key: 'overview', label: 'Overview', icon: BarChart3 },
-    { key: 'users', label: 'Users', icon: Users, badge: users.length },
-    { key: 'recharge', label: 'Recharge', icon: CreditCard, badge: pendingRecharge.length },
-    { key: 'withdraw', label: 'Withdraw', icon: ArrowDownToLine, badge: pendingWithdraw.length },
-    { key: 'products', label: 'Products', icon: TrendingUp },
-    { key: 'resets', label: 'Resets', icon: Shield, badge: pendingResets.length },
-    { key: 'gifts', label: 'Tools', icon: Gift },
-  ];
+  if (loading) return <div className="p-6 text-center">Loading REAL database... Please wait</div>;
 
   return (
-    <div className="min-h-screen p-4" style={{ background: '#0a0a0a' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 mb-4 rounded-2xl" style={{ background: '#111', border: '1px solid #2a2a2a' }}>
-        <div className="flex items-center gap-2">
-          <Shield size={18} className="text-[#c9a84c]" />
-          <span className="text-white font-black text-lg">Admin Panel</span>
-        </div>
-        <button onClick={() => { setCurrentUser(null); navigate('/login'); }} className="flex items-center gap-2 text-gray-400 text-sm">
-          <LogOut size={14} /> Logout
-        </button>
-      </div>
+    <div className="p-4 max-w-6xl mx-auto space-y-6 pb-20">
+      <h1 className="text-2xl font-bold">ADMIN - REAL FULL CONTROL</h1>
+      <p className="text-green-600 font-semibold">Connected to Supabase: {users.length} users, {recharges.length} recharges, {withdraws.length} withdraws - REAL for everyone!</p>
 
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto mb-4 pb-2">
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap ${tab === t.key? 'text-black gold-gradient' : 'text-gray-400'}`}
-            style={tab!== t.key? { background: '#151515', border: '1px solid #2a2a2a' } : {}}>
-            <t.icon size={14} /> {t.label} {t.badge? `(${t.badge})` : ''}
-          </button>
-        ))}
-      </div>
-
-      {/* OVERVIEW */}
-      {tab === 'overview' && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl p-4" style={{ background: '#151515' }}><p className="text-gray-500 text-xs">Total Users</p><p className="text-white font-black text-xl">{users.length}</p></div>
-          <div className="rounded-2xl p-4" style={{ background: '#151515' }}><p className="text-gray-500 text-xs">Total Balance</p><p className="text-[#c9a84c] font-black text-xl">{formatUGX(totalBalance)}</p></div>
-          <div className="rounded-2xl p-4" style={{ background: '#151515' }}><p className="text-gray-500 text-xs">Total Deposits</p><p className="text-white font-black text-xl">{formatUGX(totalRecharge)}</p></div>
-          <div className="rounded-2xl p-4" style={{ background: '#151515' }}><p className="text-gray-500 text-xs">Pending Withdraw</p><p className="text-yellow-400 font-black text-xl">{pendingWithdraw.length}</p></div>
+      {/* CREDIT / DEDUCT */}
+      <div className="bg-white p-4 rounded-lg shadow border">
+        <h2 className="font-bold text-lg mb-3">💰 Credit / Deduct ANY User (Instant for ALL devices)</h2>
+        <input placeholder="Search phone" value={filter} onChange={e=>setFilter(e.target.value)} className="border p-2 rounded w-full mb-3" />
+        <select value={selectedUser} onChange={e=>setSelectedUser(e.target.value)} className="border p-2 rounded w-full mb-3">
+          <option value="">Select User</option>
+          {filteredUsers.map((u:any)=><option key={u.id} value={u.id}>{u.phone} - Balance: {formatUGX(u.balance)} {u.isAdmin?'(ADMIN)':''}</option>)}
+        </select>
+        <div className="flex gap-2">
+          <input type="number" placeholder="Amount UGX" value={amount} onChange={e=>setAmount(e.target.value)} className="border p-2 rounded flex-1" />
+          <button onClick={handleCredit} className="bg-green-600 text-white px-4 py-2 rounded font-bold">CREDIT +</button>
+          <button onClick={handleDeduct} className="bg-red-600 text-white px-4 py-2 rounded font-bold">DEDUCT -</button>
         </div>
-      )}
+      </div>
 
       {/* USERS */}
-      {tab === 'users' && (
-        <div className="rounded-2xl p-4" style={{ background: '#151515', border: '1px solid #2a2a2a' }}>
-          <div className="flex items-center gap-2 mb-3 rounded-xl px-3 py-2" style={{ background: '#1e1e1e', border: '1px solid #333' }}>
-            <Search size={14} className="text-gray-500" />
-            <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search phone or ID..."
-              className="bg-transparent outline-none text-white text-sm w-full" />
-          </div>
-          <p className="text-white font-bold text-sm mb-2">All Users ({filteredUsers.length})</p>
-          {filteredUsers.length === 0? <p className="text-gray-600 text-xs py-4 text-center">No users found</p> : (
-            <div className="space-y-2">
-              {filteredUsers.map(u => (
-                <div key={u.id} className="rounded-xl p-3 flex justify-between" style={{ background: '#1e1e1e' }}>
-                  <div><p className="text-white text-sm font-bold">{u.phone}</p><p className="text-gray-500 text-[10px]">{u.id}</p></div>
-                  <div className="text-right"><p className="text-[#c9a84c] text-sm font-bold">{formatUGX(u.balance)}</p></div>
-                </div>
-              ))}
-            </div>
-          )}
+      <div className="bg-white p-4 rounded-lg shadow border">
+        <h2 className="font-bold mb-2">All Users ({users.length})</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="bg-gray-100"><th className="p-2 text-left">Phone</th><th className="p-2">Balance</th><th className="p-2">Income</th><th className="p-2">Action</th></tr></thead>
+            <tbody>
+              {users.map((u:any)=><tr key={u.id} className="border-t"><td className="p-2">{u.phone}</td><td className="p-2">{formatUGX(u.balance)}</td><td className="p-2">{formatUGX(u.cumulativeIncome||0)}</td><td className="p-2 flex gap-1"><button onClick={()=>{setSelectedUser(u.id); window.scrollTo(0,0);}} className="bg-blue-500 text-white px-2 py-1 rounded text-xs">Select</button></td></tr>)}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
-      {/* RECHARGE */}
-      {tab === 'recharge' && (
+      {/* RECHARGES */}
+      <div className="bg-white p-4 rounded-lg shadow border">
+        <h2 className="font-bold mb-2">Recharge Requests - Pending ({recharges.filter((r:any)=>r.status==='pending').length})</h2>
         <div className="space-y-2">
-          {rechargeOrders.length === 0? <p className="text-gray-500 text-center py-8">No recharge orders</p> : rechargeOrders.map(o => (
-            <div key={o.id} className="rounded-xl p-3" style={{ background: '#151515', border: '1px solid #2a2a2a' }}>
-              <div className="flex justify-between"><span className="text-white text-sm">{o.userId}</span><span className="text-[#c9a84c] text-sm">{formatUGX(o.amount)}</span></div>
-              <div className="flex gap-2 mt-2">
-                {o.status === 'pending' && <>
-                  <button onClick={() => { approveRechargeOrder(o.id); setRefresh(r=>r+1); toast.success('Approved'); }} className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-xs flex items-center gap-1"><Check size={12}/> Approve</button>
-                  <button onClick={() => { rejectRechargeOrder(o.id); setRefresh(r=>r+1); toast.success('Rejected'); }} className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs flex items-center gap-1"><X size={12}/> Reject</button>
-                </>}
-                <span className="text-[10px] px-2 py-1 rounded-full" style={{ background: o.status==='completed'?'rgba(201,168,76,0.1)':'rgba(251,191,36,0.1)', color: o.status==='completed'?'#c9a84c':'#fbbf24' }}>{o.status}</span>
-              </div>
+          {recharges.map((r:any)=><div key={r.id} className="border p-2 rounded flex justify-between items-center">
+            <div><div className="font-bold">{formatUGX(r.amount)} - {r.phoneNumber||r.userId}</div><div className="text-xs text-gray-500">{r.status} - {new Date(r.createdAt).toLocaleString()}</div></div>
+            <div className="flex gap-1">
+              {r.status==='pending' && <><button onClick={async()=>{await approveRechargeOrder(r.id); alert('Approved! Balance credited instantly'); loadAll();}} className="bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button><button onClick={async()=>{await rejectRechargeOrder(r.id); loadAll();}} className="bg-red-600 text-white px-3 py-1 rounded text-xs">Reject</button></>}
+              {r.status!=='pending' && <span className={`text-xs px-2 py-1 rounded ${r.status==='completed'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}`}>{r.status}</span>}
             </div>
-          ))}
+          </div>)}
+          {recharges.length===0 && <p className="text-gray-500 text-sm">No recharges</p>}
         </div>
-      )}
+      </div>
 
-      {/* WITHDRAW */}
-      {tab === 'withdraw' && (
+      {/* WITHDRAWS */}
+      <div className="bg-white p-4 rounded-lg shadow border">
+        <h2 className="font-bold mb-2">Withdraw Requests - Pending ({withdraws.filter((w:any)=>w.status==='pending').length})</h2>
         <div className="space-y-2">
-          {withdrawOrders.map(o => (
-            <div key={o.id} className="rounded-xl p-3" style={{ background: '#151515', border: '1px solid #2a2a2a' }}>
-              <div className="flex justify-between"><span className="text-white text-sm">{o.userId}</span><span className="text-red-400 text-sm">{formatUGX(o.amount)}</span></div>
-              {o.status === 'pending' && (
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => { approveWithdrawOrder(o.id); setRefresh(r=>r+1); toast.success('Approved'); }} className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-xs"><Check size={12}/> Approve</button>
-                  <button onClick={() => { rejectWithdrawOrder(o.id); setRefresh(r=>r+1); }} className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs"><X size={12}/> Reject</button>
-                </div>
-              )}
+          {withdraws.map((w:any)=><div key={w.id} className="border p-2 rounded flex justify-between items-center">
+            <div><div className="font-bold">{formatUGX(w.amount)} (Gets {formatUGX(w.receivedAmount||w.amount)})</div><div className="text-xs text-gray-500">{w.status} - {new Date(w.createdAt).toLocaleString()} - {w.bankCard?.accountNumber||''}</div></div>
+            <div className="flex gap-1">
+              {w.status==='pending' && <><button onClick={async()=>{await approveWithdrawOrder(w.id); alert('Withdraw approved'); loadAll();}} className="bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button><button onClick={async()=>{await rejectWithdrawOrder(w.id); alert('Rejected & refunded'); loadAll();}} className="bg-red-600 text-white px-3 py-1 rounded text-xs">Reject & Refund</button></>}
+              {w.status!=='pending' && <span className={`text-xs px-2 py-1 rounded ${w.status==='completed'?'bg-green-100':'bg-red-100'}`}>{w.status}</span>}
             </div>
-          ))}
+          </div>)}
+          {withdraws.length===0 && <p className="text-gray-500 text-sm">No withdraws</p>}
         </div>
-      )}
+      </div>
 
-      {tab === 'gifts' && <div className="text-gray-500 text-center py-8 text-sm">Use GiftTools component here - simplified for build fix</div>}
-      {tab === 'products' && <div className="text-white text-sm">Products: {PRODUCTS.length} packages</div>}
-      {tab === 'resets' && <div className="text-white text-sm">Pending Resets: {pendingResets.length}</div>}
+      <button onClick={loadAll} className="w-full bg-black text-white py-3 rounded font-bold">🔄 Refresh REAL Data</button>
     </div>
   );
-}
+          }
