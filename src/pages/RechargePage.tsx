@@ -38,8 +38,8 @@ export default function RechargePage() {
         <p className="text-xs text-gray-500 mb-4">Minimum: UGX 30,000</p>
 
         <label className="text-sm font-semibold text-gray-600">Phone Number</label>
-        <div className="flex mt-1 mb-5 bg-[#eef2f7] rounded-lg border">
-          <span className="px-3 py-3">📱</span>
+        ` <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Enter phone number" type="tel" style={{color:'black'}} className="flex-1 bg-transparent outline-none p-3 text-sm" />
+          
           <input
             value={phone}
             onChange={e=>setPhone(e.target.value)}
