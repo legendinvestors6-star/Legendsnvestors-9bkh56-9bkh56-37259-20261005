@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Phone, Lock, ArrowLeft, CheckCircle, Clock, XCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { loginUser } from '@/lib/storage';
-const createPasswordReset = (d:any) => { const a=JSON.parse(localStorage.getItem('passwordResets')||'[]'); a.push({...d,status:'pending',id:Date.now().toString()}); localStorage.setItem('passwordResets',JSON.stringify(a)); return {id:'1'}; };
-const getPasswordResetStatus = (p:string) => { try{ const a=JSON.parse(localStorage.getItem('passwordResets')||'[]'); return a.find((r:any)=>r.phone===p)||null; }catch{return null;} };
+import { loginUser, createPasswordReset, getPasswordResetStatus } from '@/lib/storage';
+
+
 type View = 'login' | 'forgot' | 'status';
 
 export default function LoginPage() {
