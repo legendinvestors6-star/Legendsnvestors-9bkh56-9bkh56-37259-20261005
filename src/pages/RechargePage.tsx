@@ -31,8 +31,8 @@ export default function RechargePage() {
         </div>
 
         <label className="text-sm font-semibold text-gray-600">Recharge Amount</label>
-        <div className="flex mt-1 mb-3 bg-[#eef2f7] rounded-lg border">
-          <span className="px-3 py-3 font-bold text-gray-700 text-sm">UGX</span>
+        ` <input value={amount} onChange={e=>setAmount(e.target.value)} placeholder="Enter amount" type="number" style={{color:'black'}} className="flex-1 bg-transparent outline-none p-3 text-sm" />`
+          
           <input value={amount} onChange={e=>setAmount(e.target.value)} placeholder="Enter amount" type="number" className="flex-1 bg-transparent outline-none p-3 text-sm" />
         </div>
         <p className="text-xs text-gray-500 mb-4">Minimum: UGX 30,000</p>
