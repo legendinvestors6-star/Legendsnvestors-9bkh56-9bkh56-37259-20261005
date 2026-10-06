@@ -1,4 +1,4 @@
-himport { supabase } from './supabase';
+import { supabase } from './supabase';
 
 // ===== CORE USER =====
 export function getCurrentUser() {
