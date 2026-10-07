@@ -78,3 +78,35 @@ export const addTransaction = async () => true
 export const approveRechargeOrder = async () => true
 export const approveWithdrawOrder = async () => true
 export const approvePasswordReset = async () => true
+
+
+  export const loginUser = async (phone: string, password: string) => {
+  try {
+    const users = JSON.parse(localStorage.getItem('legend_users') || '[]');
+    const user = users.find((u:any) => u.phone === phone && u.password === password);
+    if (user) {
+      localStorage.setItem('legend_current_user', JSON.stringify(user));
+      return user;
+    }
+    return null;
+  } catch { return null }
+}
+export const logoutUser = () => {
+  localStorage.removeItem('legend_current_user');
+}
+export const createUser = async (user:any) => {
+  return registerUser(user);
+}
+export const getUserByPhone = (phone:string) => {
+  try {
+    const users = JSON.parse(localStorage.getItem('legend_users') || '[]');
+    return users.find((u:any) => u.phone === phone) || null;
+  } catch { return null }
+}
+export const saveCurrentUser = (user:any) => {
+  localStorage.setItem('legend_current_user', JSON.stringify(user));
+}
+export const getRecharge = () => [] as any[]
+export const getWithdrawals = () => [] as any[]
+export const getTransactions = () => [] as any[]
+export const getProducts = () => PRODUCTS
