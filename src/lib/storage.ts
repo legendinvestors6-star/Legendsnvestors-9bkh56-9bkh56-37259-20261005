@@ -1,80 +1,35 @@
 import { supabase } from './supabase'
-
-export const creditDailyProfit = async () => {}
-export const creditDaily = async () => {}
-export const creditDailyEarnings = async () => {}
-
-// Password resets
-export const createPasswordReset = async () => true
-export const createPasswordResetRequest = async () => true
-export const getPasswordResets = () => []
-export const getPasswordResetRequests = () => []
-
-// 9000 BONUS SUPABASE
+export const PRODUCTS = [
+  { id: '1', name: 'Starter', price: 100, dailyProfit: 5, duration: 30 },
+  { id: '2', name: 'Growth', price: 500, dailyProfit: 30, duration: 30 },
+] as any[]
+const getUsersSafe = () => {
+  try { return JSON.parse(localStorage.getItem('legend_users') || '[]') } catch { return [] }
+}
+export const getUsers = () => getUsersSafe()
 export const registerUser = async (user:any) => {
-  try { 
-    await supabase.from('users').insert([{ 
-      phone: user.phone, 
-      password: user.password, 
-      name: user.name||user.phone, 
-      role: 'user', 
-      balance: 9000 
-    }]) 
-  } catch(e){ 
-    console.log(e) 
-  }
-  const users = getUsers(); 
-  const newUser = {...user, role:'user', balance:9000}; 
-  users.push(newUser); 
-  localStorage.setItem('legend_users', JSON.stringify(users)); 
-  return newUser
+  const users = getUsersSafe(); users.push(user);
+  localStorage.setItem('legend_users', JSON.stringify(users));
+  localStorage.setItem('legend_current_user', JSON.stringify(user));
+  return user;
 }
-
-export const REGISTRATION_BONUS = 9000
-export const MIN_WITHDRAWAL = 9000
-export const MINIMUM_WITHDRAWAL = 9000
-export const WITHDRAWAL_MIN = 9000
-
-export const hasUserInvested = async (phone:string) => {
-  try { 
-    const {data} = await supabase.from('investments').select('*').eq('phone', phone).limit(1); 
-    return data && data.length>0 
-  } catch { 
-    return false 
-  }
-}
-
-// Format helpers
-export const formatUGX = (n:number) => `${(n||0).toLocaleString()} RWF`
-export const formatRWF = formatUGX
-export const formatCurrency = formatUGX
-export const formatMoney = formatUGX
-export const PRODUCTS = [] as any[]
-
-// --- COMPATIBILITY STUBS TO FIX BUILD ---
 export const getCurrentUser = () => {
-  try { 
-    return JSON.parse(localStorage.getItem('legend_current_user') || 'null') 
-  } catch { 
-    return null 
-  }
+  try { return JSON.parse(localStorage.getItem('legend_current_user') || 'null') } catch { return null }
 }
+export const getUserByPhone = (p:string) => getUsersSafe().find((u:any) => u.phone === p) || null
+export const saveCurrentUser = (u:any) => localStorage.setItem('legend_current_user', JSON.stringify(u))
+export const loginUser = async (p:string, pw:string) => {
+  const users = getUsersSafe();
+  const u = users.find((x:any) => x.phone === p && x.password === pw);
+  if (u) { localStorage.setItem('legend_current_user', JSON.stringify(u)); return u; }
+  return null;
 }
-export const getTeamMembers = (phone?: string) => {
-  return { level1: [] as any[], level2: [] as any[], level3: [] as any[] }
-}
-export const getTeamCommissions = (phone?: string) => {
-  return [] as any[]
-}
+export const logoutUser = () => localStorage.removeItem('legend_current_user')
+export const createUser = async (u:any) => registerUser(u)
+export const getTeamMembers = (p?:string) => ({ level1: [] as any[], level2: [] as any[], level3: [] as any[] })
+export const getTeamCommissions = (p?:string) => [] as any[]
 export const getTeamCommission = getTeamCommissions
 export const getTeamCounts = () => ({ level1: 0, level2: 0, level3: 0 })
-export const getUsers = () => {
-  try { 
-    return JSON.parse(localStorage.getItem('legend_users') || '[]') 
-  } catch { 
-    return [] 
-  }
-}
 export const getRechargeOrders = () => [] as any[]
 export const getWithdrawOrders = () => [] as any[]
 export const getInvestments = () => [] as any[]
@@ -83,35 +38,18 @@ export const addTransaction = async () => true
 export const approveRechargeOrder = async () => true
 export const approveWithdrawOrder = async () => true
 export const approvePasswordReset = async () => true
-
-
-  export const loginUser = async (phone: string, password: string) => {
-  try {
-    const users = JSON.parse(localStorage.getItem('legend_users') || '[]');
-    const user = users.find((u:any) => u.phone === phone && u.password === password);
-    if (user) {
-      localStorage.setItem('legend_current_user', JSON.stringify(user));
-      return user;
-    }
-    return null;
-  } catch { return null }
-}
-export const logoutUser = () => {
-  localStorage.removeItem('legend_current_user');
-}
-export const createUser = async (user:any) => {
-  return registerUser(user);
-}
-export const getUserByPhone = (phone:string) => {
-  try {
-    const users = JSON.parse(localStorage.getItem('legend_users') || '[]');
-    return users.find((u:any) => u.phone === phone) || null;
-  } catch { return null }
-}
-export const saveCurrentUser = (user:any) => {
-  localStorage.setItem('legend_current_user', JSON.stringify(user));
-}
 export const getRecharge = () => [] as any[]
 export const getWithdrawals = () => [] as any[]
 export const getTransactions = () => [] as any[]
 export const getProducts = () => PRODUCTS
+export const getProduct = (id:string) => PRODUCTS.find((p:any) => p.id === id)
+export const formatPrice = (n:number) => `$${n}`
+export const formatDate = (d:any) => new Date(d).toLocaleDateString()
+export const formatKWF = (n:any) => `${n}`
+export const formatUGX = formatKWF
+export const formatCurrency = formatUGX
+export const formatMoney = formatUGX
+export const creditDailyProfit = async () => true
+export const deleteUser = async () => true
+export const blockUser = async () => true
+export const unblockUser = async () => true
