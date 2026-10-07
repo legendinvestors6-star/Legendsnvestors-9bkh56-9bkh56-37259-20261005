@@ -46,6 +46,17 @@ export const creditDailyProfit = creditDailyIncome; export const creditDailyEarn
 export const getDailyIncome = async (uid?: string) => { const invs = await getUserInvestments(uid); let t = 0; invs.forEach((i: any) => t += i.daily_profit || 0); return t; };
 export const getDailyProfit = getDailyIncome; export const getTotalDailyIncome = getDailyIncome;
 
+// FORMATS - FIXES 6XYgYP94i
+export const formatUGX = (n: any) => `UGX ${Number(n||0).toLocaleString()}`;
+export const formatUG = formatUGX;
+export const formatUSDT = (n: any) => `$${Number(n||0).toFixed(2)}`;
+export const formatUSD = formatUSDT;
+export const formatCurrency = formatUSDT;
+export const formatMoney = formatUSDT;
+export const formatPrice = formatUSDT;
+export const formatBalance = formatUSDT;
+export const formatNumber = (n: any) => Number(n||0).toLocaleString();
+
 // EXTRA COMPAT FOR ANY OTHER PAGE
 export const getIncome = () => 0; export const getEarnings = () => 0; export const getTotalIncome = () => 0; export const getReferralBonus = () => 0; export const getTotalEarnings = () => 0; export const getTotalBalance = () => getCurrentUser()?.balance || 0;
 export const storage = { get: (k: string) => localStorage.getItem(k), set: (k: string, v: string) => localStorage.setItem(k, v) };
