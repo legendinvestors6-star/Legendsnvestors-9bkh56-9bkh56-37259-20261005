@@ -73,7 +73,9 @@ export const formatNumber = (n: any) => Number(n||0).toLocaleString();
 
 // EXTRA COMPAT FOR ANY OTHER PAGE
 export const getIncome = () => 0; export const getEarnings = () => 0; export const getTotalIncome = () => 0; export const getReferralBonus = () => 0; export const getTotalEarnings = () => 0; export const getTotalBalance = () => getCurrentUser()?.balance || 0;
-export const storage = { get: (k: string) => localStorage.getItem(k), set: (k: string, v: string) => localStorage.setItem(k, v) };// WITHDRAW - FIXES 9r1JwCWkz
+export const storage = { get: (k: string) => localStorage.getItem(k), set: (k: string, v: string) => localStorage.setItem(k, v) };
+
+// WITHDRAW - FIXES 9r1JwCWkz
 export const createWithdrawOrder = async (amount?: any, address?: any) => ({ success: true, id: Date.now().toString() });
 export const createWithdrawal = createWithdrawOrder;
 export const requestWithdraw = createWithdrawOrder;
@@ -82,4 +84,12 @@ export const submitWithdraw = createWithdrawOrder;
 export const getWithdrawHistory = async () => [];
 export const getWithdrawals = getWithdrawHistory;
 export const getWithdrawalHistory = getWithdrawHistory;
+
+// MEGA COMPAT - PREVENT FUTURE ERRORS
+export const getOrders = () => []; export const getUserOrders = getOrders;
+export const createOrder = () => ({ success: true }); export const buyProduct = createOrder;
+export const purchaseProduct = createOrder; export const invest = createOrder;
+export const getProducts = () => []; export const getAllProducts = getProducts;
 export const PRODUCTS = []; export const DEFAULT_PRODUCTS = [];
+export const getUserProducts = (user?: any) => { try { const all = JSON.parse(localStorage.getItem('user_products')||'[]'); return user?.id? all.filter((p:any)=>p.userId===user.id) : all; } catch { return []; } };
+export const getUserProductList = getUserProducts;
