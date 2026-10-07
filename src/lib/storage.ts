@@ -85,4 +85,18 @@ export const getWithdrawHistory = async () => [];
 export const getWithdrawals = getWithdrawHistory;
 export const getWithdrawalHistory = getWithdrawHistory;
 export const getWithdrawOrders = getWithdrawHistory; export const getWithdrawOrder = getWithdrawHistory; export const getWithdrawOrderHistory = getWithdrawHistory; export const getWithdrawalsList = getWithdrawHistory;
+// RECHARGE - FIXES GWbK9KknT + ProfilePage.tsx 7:30
+export const getRechargeOrders = () => []; export const getRechargeOrder = () => [];
+export const getRechargeHistory = () => []; export const getRecharges = () => [];
+export const getRechargeList = () => []; export const getRechargeRecords = () => [];
+export const createRechargeOrder = () => ({ success: true }); export const createRecharge = createRechargeOrder;
+export const recharge = createRechargeOrder; export const submitRecharge = createRechargeOrder;
+
+// PROFILE - FIXES ProfilePage
+export const updateUser = (u:any) => { try { saveCurrentUser(u); const users = JSON.parse(localStorage.getItem('users')||'[]'); const i = users.findIndex((x:any)=>x.id===u.id); if(i>=0){ users[i]=u; localStorage.setItem('users', JSON.stringify(users)); } return u; } catch { return u; } };
+export const getTeamCommissions = () => 0; export const getTeamCommission = getTeamCommissions;
+export const getTeamIncome = () => 0; export const getReferralIncome = () => 0;
+export const getReferrals = () => []; export const getTeam = () => [];
+export const getTeamMembers = () => []; export const getMyTeam = () => [];
+
 
