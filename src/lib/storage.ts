@@ -74,29 +74,17 @@ export const formatNumber = (n: any) => Number(n||0).toLocaleString();
 // EXTRA COMPAT FOR ANY OTHER PAGE
 export const getIncome = () => 0; export const getEarnings = () => 0; export const getTotalIncome = () => 0; export const getReferralBonus = () => 0; export const getTotalEarnings = () => 0; export const getTotalBalance = () => getCurrentUser()?.balance || 0;
 export const storage = { get: (k: string) => localStorage.getItem(k), set: (k: string, v: string) => localStorage.setItem(k, v) };
+// WITHDRAW - FIXES 9r1JwCWkz + WithdrawStatusPage
+export const createWithdrawOrder = (amount?: any, address?: any) => { try { const u = getCurrentUser(); if(!u) return { success: false, message: 'Login required' }; const order = { id: Date.now().toString(), userId: u.id, amount: Number(amount)||0, address: address||'', status: 'pending', createdAt: new Date().toISOString() }; const list = JSON.parse(localStorage.getItem('withdrawOrders')||'[]'); list.push(order); localStorage.setItem('withdrawOrders', JSON.stringify(list)); return { success: true, order }; } catch(e){ return { success: false, message: 'Failed' }; } };
+export const createWithdrawal = createWithdrawOrder; export const requestWithdraw = createWithdrawOrder; export const withdraw = createWithdrawOrder; export const submitWithdraw = createWithdrawOrder;
+export const getWithdrawHistory = () => { try { return JSON.parse(localStorage.getItem('withdrawOrders')||'[]'); } catch { return []; } };
+export const getWithdrawals = getWithdrawHistory; export const getWithdrawalHistory = getWithdrawHistory; export const getWithdrawOrders = getWithdrawHistory;
 
-// WITHDRAW - FIXES 9r1JwCWkz
-export const createWithdrawOrder = async (amount?: any, address?: any) => ({ success: true, id: Date.now().toString() });
-export const createWithdrawal = createWithdrawOrder;
-export const requestWithdraw = createWithdrawOrder;
-export const withdraw = createWithdrawOrder;
-export const submitWithdraw = createWithdrawOrder;
-export const getWithdrawHistory = async () => [];
-export const getWithdrawals = getWithdrawHistory;
-export const getWithdrawalHistory = getWithdrawHistory;
-export const getWithdrawOrders = getWithdrawHistory; export const getWithdrawOrder = getWithdrawHistory; export const getWithdrawOrderHistory = getWithdrawHistory; export const getWithdrawalsList = getWithdrawHistory;
 // RECHARGE - FIXES GWbK9KknT + ProfilePage.tsx 7:30
-export const getRechargeOrders = () => []; export const getRechargeOrder = () => [];
-export const getRechargeHistory = () => []; export const getRecharges = () => [];
-export const getRechargeList = () => []; export const getRechargeRecords = () => [];
-export const createRechargeOrder = () => ({ success: true }); export const createRecharge = createRechargeOrder;
-export const recharge = createRechargeOrder; export const submitRecharge = createRechargeOrder;
+export const getRechargeOrders = () => []; export const getRechargeHistory = () => []; export const getRechargeList = () => []; export const createRechargeOrder = () => ({ success: true }); export const recharge = createRechargeOrder;
 
-// PROFILE - FIXES ProfilePage
+// PROFILE - only updateUser is needed, others already exist at top
 export const updateUser = (u:any) => { try { saveCurrentUser(u); const users = JSON.parse(localStorage.getItem('users')||'[]'); const i = users.findIndex((x:any)=>x.id===u.id); if(i>=0){ users[i]=u; localStorage.setItem('users', JSON.stringify(users)); } return u; } catch { return u; } };
-export const getTeamCommissions = () => 0; export const getTeamCommission = getTeamCommissions;
-export const getTeamIncome = () => 0; export const getReferralIncome = () => 0;
-export const getReferrals = () => []; export const getTeam = () => [];
-export const getTeamMembers = () => []; export const getMyTeam = () => [];
+
 
 
