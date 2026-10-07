@@ -57,3 +57,24 @@ export const getRechargeOrders = () => { try { return JSON.parse(localStorage.ge
 export const getRecharges = getRechargeOrders
 export const getRechargeHistory = getRechargeOrders
 export const saveRecharge = async (d:any) => { try { await supabase.from('recharges').insert([d]) } catch {} }
+
+// Aliases for RegisterPage compatibility - SUPABASE WITH 9000 BONUS
+export const registerUser = async (user:any) => {
+  try { 
+    await supabase.from('users').insert([{
+      phone: user.phone,
+      password: user.password,
+      name: user.name || user.phone,
+      role: 'user', 
+      balance: 9000
+    }]) 
+  } catch (e) {
+    console.log('Supabase insert error', e)
+  }
+  const users = getUsers(); 
+  const newUser = {...user, role: 'user', balance: 9000};
+  users.push(newUser); 
+  localStorage.setItem('legend_users', JSON.stringify(users)); 
+  return newUser
+}
+export const REGISTRATION_BONUS = 9000
