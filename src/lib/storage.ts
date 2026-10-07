@@ -59,20 +59,41 @@ export const getPasswordResetRequests = () => []
 
 // 9000 BONUS SUPABASE
 export const registerUser = async (user:any) => {
-  try { await supabase.from('users').insert([{ phone: user.phone, password: user.password, name: user.name||user.phone, role: 'user', balance: 9000 }]) } catch(e){ console.log(e) }
-  const users = getUsers(); const newUser = {...user, role:'user', balance:9000}; users.push(newUser); localStorage.setItem('legend_users', JSON.stringify(users)); return newUser
+  try { 
+    await supabase.from('users').insert([{ 
+      phone: user.phone, 
+      password: user.password, 
+      name: user.name||user.phone, 
+      role: 'user', 
+      balance: 9000 
+    }]) 
+  } catch(e){ 
+    console.log(e) 
+  }
+  const users = getUsers(); 
+  const newUser = {...user, role:'user', balance:9000}; 
+  users.push(newUser); 
+  localStorage.setItem('legend_users', JSON.stringify(users)); 
+  return newUser
 }
+
 export const REGISTRATION_BONUS = 9000
 export const MIN_WITHDRAWAL = 9000
 export const MINIMUM_WITHDRAWAL = 9000
 export const WITHDRAWAL_MIN = 9000
-export const hasUserInvested = async (phone:string) => {
-  try { const {data} = await supabase.from('investments').select('*').eq('phone', phone).limit(1); return data && data.length>0 } catch { return false }
 
-  // Format helpers - to make ProductPage green
+export const hasUserInvested = async (phone:string) => {
+  try { 
+    const {data} = await supabase.from('investments').select('*').eq('phone', phone).limit(1); 
+    return data && data.length>0 
+  } catch { 
+    return false 
+  }
+} // <-- THIS WAS MISSING
+
+// Format helpers - to make ProductPage green
 export const formatUGX = (n:number) => `${n?.toLocaleString() || 0} RWF`
 export const formatRWF = formatUGX
 export const formatCurrency = formatUGX
 export const formatMoney = formatUGX
 export const PRODUCTS = []
-                                                                              }
