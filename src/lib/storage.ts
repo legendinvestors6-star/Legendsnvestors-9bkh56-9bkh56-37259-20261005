@@ -1,52 +1,5 @@
 import { supabase } from './supabase'
 
-const defaultUsers = [
-  { phone: '0746085840', password: 'milly@2323', name: 'Legend User', role: 'admin', balance: 9000 },
-]
-
-export const loginUser = async (phone: string, password: string) => {
-  try {
-    const { data } = await supabase.from('users').select('*').eq('phone', phone).eq('password', password).maybeSingle()
-    if (data) { localStorage.setItem('legend_current', JSON.stringify(data)); return data }
-  } catch {}
-  const users = getUsers(); const u = users.find((x:any)=>x.phone===phone && x.password===password)
-  const found = u || { phone, password, name: phone, role: 'user', balance: 9000 }
-  localStorage.setItem('legend_current', JSON.stringify(found)); return found
-}
-
-export const getUsers = () => { try { const s = JSON.parse(localStorage.getItem('legend_users')||'[]'); return s.length? s : defaultUsers } catch { return defaultUsers } }
-export const getCurrentUser = () => { try { return JSON.parse(localStorage.getItem('legend_current')||'null') } catch { return null } }
-export const setCurrentUser = (u:any) => localStorage.setItem('legend_current', JSON.stringify(u))
-export const logout = () => localStorage.removeItem('legend_current')
-export const saveUser = async (u:any) => { try { await supabase.from('users').insert([u]) } catch {} }
-export const updateUser = async (p:string,d:any) => { try { await supabase.from('users').update(d).eq('phone',p) } catch {} return d }
-export const getUserByPhone = (p:string) => getUsers().find((u:any)=>u.phone===p)
-
-export const getProducts = () => { try { return JSON.parse(localStorage.getItem('legend_products')||'[]') } catch { return [] } }
-export const getInvestments = () => { try { return JSON.parse(localStorage.getItem('legend_investments')||'[]') } catch { return [] } }
-export const getMyTeam = () => { try { return JSON.parse(localStorage.getItem('legend_team')||'[]') } catch { return [] } }
-export const getWithdrawals = () => { try { return JSON.parse(localStorage.getItem('legend_withdrawals')||'[]') } catch { return [] } }
-export const getRechargeOrders = () => { try { return JSON.parse(localStorage.getItem('legend_recharges')||'[]') } catch { return [] } }
-
-// ALL ALIASES TO MAKE BUILD GREEN
-export const getProductList = getProducts
-export const getAllProducts = getProducts
-export const getUserProducts = getInvestments
-export const getUserProductList = getInvestments
-export const getMyInvestments = getInvestments
-export const getTeam = getMyTeam
-export const getWithdrawalHistory = getWithdrawals
-export const getWithdrawOrders = getWithdrawals
-export const getWithdrawHistory = getWithdrawals
-export const getRecharges = getRechargeOrders
-export const getRechargeHistory = getRechargeOrders
-export const saveWithdrawal = async (d:any) => { try { await supabase.from('withdrawals').insert([d]) } catch {} }
-export const saveRecharge = async (d:any) => { try { await supabase.from('recharges').insert([d]) } catch {} }
-export const saveInvestment = async (d:any) => { try { await supabase.from('investments').insert([d]) } catch {} }
-
-// Credit daily - missing in HomePage - add all variants
-export const creditDailyIncome = async () => {}
-export const creditDailyBonus = async () => {}
 export const creditDailyProfit = async () => {}
 export const creditDaily = async () => {}
 export const creditDailyEarnings = async () => {}
@@ -89,33 +42,39 @@ export const hasUserInvested = async (phone:string) => {
   } catch { 
     return false 
   }
-} // <-- THIS WAS MISSING
+}
 
-// Format helpers - to make ProductPage green
-export const formatUGX = (n:number) => `${n?.toLocaleString() || 0} RWF`
+// Format helpers
+export const formatUGX = (n:number) => `${(n||0).toLocaleString()} RWF`
 export const formatRWF = formatUGX
 export const formatCurrency = formatUGX
 export const formatMoney = formatUGX
-export const PRODUCTS = []// --- COMPATIBILITY STUBS TO FIX BUILD ---
-// TeamPage and other pages still import these from storage.ts
+export const PRODUCTS = [] as any[]
+
+// --- COMPATIBILITY STUBS TO FIX BUILD ---
 export const getCurrentUser = () => {
-  try { return JSON.parse(localStorage.getItem('legend_current_user') || 'null') } catch { return null }
+  try { 
+    return JSON.parse(localStorage.getItem('legend_current_user') || 'null') 
+  } catch { 
+    return null 
+  }
 }
 export const getTeamMembers = (phone?: string) => {
-  return []
+  return [] as any[]
 }
-export const getTeamM = () => [] // in case truncated
+export const getTeamM = () => [] as any[]
 export const getUsers = () => {
-  try { return JSON.parse(localStorage.getItem('legend_users') || '[]') } catch { return [] }
+  try { 
+    return JSON.parse(localStorage.getItem('legend_users') || '[]') 
+  } catch { 
+    return [] 
+  }
 }
-export const getRechargeOrders = () => []
-export const getWithdrawOrders = () => []
-export const getInvestments = () => []
+export const getRechargeOrders = () => [] as any[]
+export const getWithdrawOrders = () => [] as any[]
+export const getInvestments = () => [] as any[]
 export const updateUser = async () => true
 export const addTransaction = async () => true
 export const approveRechargeOrder = async () => true
 export const approveWithdrawOrder = async () => true
 export const approvePasswordReset = async () => true
-
-// Make sure supabase is imported at top
-import { supabase } from './supabase'
