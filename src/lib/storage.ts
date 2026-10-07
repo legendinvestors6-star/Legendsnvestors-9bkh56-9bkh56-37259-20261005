@@ -56,7 +56,9 @@ export const getCountdown = () => "23:59:59";
 export const getTimeLeft = () => "23:59:59";
 export const getRemainingTime = () => "23:59:59";
 export const getNextRewardTime = getNextProfitTime;
-
+export const getNextPayoutMs = () => Date.now() + 86400000;
+export const getNextProfitMs = () => Date.now() + 86400000;
+export const getPayoutMs = () => Date.now() + 86400000;
 
 // FORMATS - FIXES 6XYgYP94i
 export const formatUGX = (n: any) => `UGX ${Number(n||0).toLocaleString()}`;
