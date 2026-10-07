@@ -59,8 +59,6 @@ export const getCurrentUser = () => {
     return null 
   }
 }
-export const getTeamMembers = (phone?: string) => {
-  return [] as any[]
 }
 export const getTeamMembers = (phone?: string) => {
   return { level1: [] as any[], level2: [] as any[], level3: [] as any[] }
