@@ -56,4 +56,24 @@ export const approvePasswordReset = () => true;
 export const rejectPasswordReset = () => true;
 export const getTransactions = () => [];
 export const saveTransaction = () => true;
+
+  // TEAM PAGE - FIXES getTeamM error from 8aij4xSf7
+export const getTeamMembers = async (userId?: string) => {
+  if (!userId) { const u = getCurrentUser(); userId = u?.id; }
+  if (!userId) return [];
+  const { data } = await supabase.from('users').select('*').eq('referred_by', userId);
+  return data || [];
+};
+export const getTeamMember = getTeamMembers;
+export const getMyTeam = getTeamMembers;
+export const getTeam = getTeamMembers;
+export const getTeamCount = async (id?: string) => (await getTeamMembers(id)).length;
+export const getTeamMembersCount = getTeamCount;
+export const getTeamSize = getTeamCount;
+export const getTeamEarnings = () => 0;
+export const getTeamIncome = () => 0;
+export const getTeamCommission = () => 0;
+export const getReferralLink = () => `${window.location.origin}?ref=${getCurrentUser()?.id || ''}`;
+export const getInviteCode = () => getCurrentUser()?.id || '';
+export const getReferralCode = getInviteCode;
 export const storage = { get: (k: string) => localStorage.getItem(k), set: (k: string, v: string) => localStorage.setItem(k, v) };
