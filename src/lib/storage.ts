@@ -73,6 +73,7 @@ export const getTeamSize = getTeamCount;
 export const getTeamEarnings = () => 0;
 export const getTeamIncome = () => 0;
 export const getTeamCommission = () => 0;
+export const getTeamCommissions = () => 0;
 export const getReferralLink = () => `${window.location.origin}?ref=${getCurrentUser()?.id || ''}`;
 export const getInviteCode = () => getCurrentUser()?.id || '';
 export const getReferralCode = getInviteCode;
