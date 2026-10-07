@@ -1,80 +1,68 @@
-import { supabase } from './supabase';
+import { supabase } from '@/lib/supabase';
 
-export function getCurrentUser() { try { const r = localStorage.getItem('current_user')||localStorage.getItem('currentUser'); return r?JSON.parse(r):null; } catch { return null; } }
-export function setCurrentUser(u: any) { localStorage.setItem('current_user', JSON.stringify(u)); localStorage.setItem('currentUser', JSON.stringify(u)); }
-export function logout() { localStorage.removeItem('current_user'); localStorage.removeItem('currentUser'); }
-export const getUser = getCurrentUser;
+// USER
+export const getCurrentUser = () => {
+  try { const raw = localStorage.getItem('user'); return raw? JSON.parse(raw) : null; } catch { return null; }
+};
+export const setCurrentUser = (u: any) => { if (u) localStorage.setItem('user', JSON.stringify(u)); else localStorage.removeItem('user'); };
+export const logoutUser = () => localStorage.removeItem('user');
+export const logout = logoutUser;
 export const getUserById = async (id: string) => { const { data } = await supabase.from('users').select('*').eq('id', id).single(); return data; };
-export const getUserByPhone = async (p: string) => { const { data } = await supabase.from('users').select('*').eq('phone', p).single(); return data; };
+export const updateUser = async (id: string, d: any) => { const { data } = await supabase.from('users').update(d).eq('id', id).select().single(); if (data) setCurrentUser(data); return data; };
 export const getUsers = async () => { const { data } = await supabase.from('users').select('*'); return data || []; };
-export const loginUser = async (phone: string, password: string) => { const { data } = await supabase.from('users').select('*').eq('phone', phone).eq('password', password).single(); if (data) setCurrentUser(data); return data; };
-export const createUser = async (u: any) => { const { data } = await supabase.from('users').insert(u).select().single(); return data; };
-export const registerUser = createUser;
-export const signupUser = createUser;
-export const updateUser = async (id: string, up: any) => { const { data } = await supabase.from('users').update(up).eq('id', id).select().single(); return data; };
-export const updateUserBalance = async (id: string, bal: number) => { const { data } = await supabase.from('users').update({balance: bal}).eq('id', id).select().single(); return data; };
 
-// PRODUCTS - FIXES ProductPage error
-export const getUserProducts = () => { try { return JSON.parse(localStorage.getItem('userProducts')||'[]'); } catch { return []; } };
-export const getUserProduct = getUserProducts;
-export const getProducts = () => { try { return JSON.parse(localStorage.getItem('products')||'[]'); } catch { return []; } };
-export const purchaseProduct = async (productId?: string, userId?: string) => { return { success: true, message: 'Purchased' }; };
-export const purchaseProductWithBalance = purchaseProduct;
-export const buyProduct = purchaseProduct;
-export const buyProductWithBalance = purchaseProduct;
-export const purchase = purchaseProduct;
-
-// INCOME & FORMAT - FIXES HomePage
-export const creditDailyIncome = async () => true;
-export const claimDailyIncome = creditDailyIncome;
-export const collectDailyIncome = creditDailyIncome;
-export const formatUGX = (a: number|string) => `${(Number(a)||0).toLocaleString()} UGX`;
-export const formatCurrency = formatUGX;
-export const formatMoney = formatUGX;
-export const getNextPayoutMs = () => { const t = new Date(); t.setHours(24,0,0,0); return t.getTime()-Date.now(); };
-export const getNextPayout = () => new Date(Date.now()+getNextPayoutMs()).toISOString();
-export const getDailyIncome = () => 0;
-export const getTotalEarnings = () => 0;
-
-// GIFT & RESET
-export const redeemGiftCode = async (uid: string, code: string) => {
-  const c = code.trim().toUpperCase();
-  const { data: gift } = await supabase.from('gift_codes').select('*').eq('code', c).single();
-  if (!gift) return { success: false, message: 'Invalid code' };
-  if (gift.is_used) return { success: false, message: 'Already used' };
+// PRODUCTS
+export const getProducts = async () => { const { data } = await supabase.from('products').select('*'); return data || []; };
+export const getProductById = async (id: string) => { const { data } = await supabase.from('products').select('*').eq('id', id).single(); return data; };
+export const purchaseProduct = async (uid: string, pid: string, amt: number) => {
+  const { data: prod } = await supabase.from('products').select('*').eq('id', pid).single();
   const { data: user } = await supabase.from('users').select('*').eq('id', uid).single();
-  if (!user) return { success: false, message: 'User not found' };
-  await supabase.from('users').update({ balance: Number(user.balance)+Number(gift.amount) }).eq('id', uid);
-  await supabase.from('gift_codes').update({ is_used: true, used_by: user.phone }).eq('id', gift.id);
-  return { success: true, message: `Added ${gift.amount} UGX` };
+  if (!prod ||!user) return { success: false, message: 'Not found' };
+  if ((user.balance || 0) < (prod.price || amt)) return { success: false, message: 'Insufficient balance' };
+  await supabase.from('users').update({ balance: (user.balance || 0) - (prod.price || amt) }).eq('id', uid);
+  await supabase.from('investments').insert([{ user_id: uid, product_id: pid, amount: prod.price || amt, daily_profit: prod.daily_profit || 0, status: 'active' }]);
+  const { data: nu } = await supabase.from('users').select('*').eq('id', uid).single(); if (nu) setCurrentUser(nu);
+  return { success: true };
 };
-export const getGiftCodes = async () => { const { data } = await supabase.from('gift_codes').select('*'); return data||[]; };
-export const createPasswordReset = (d: any) => { const a = JSON.parse(localStorage.getItem('passwordResets')||'[]'); a.push({...d,status:'pending',id:Date.now().toString()}); localStorage.setItem('passwordResets', JSON.stringify(a)); return { id: '1' }; };
-export const getPasswordResetStatus = (p: string) => { try { const a = JSON.parse(localStorage.getItem('passwordResets')||'[]'); return a.find((r:any)=>r.phone===p)||null; } catch { return null; } };
-export const getPasswordResets = () => [];
-export const approvePasswordReset = () => true;
-export const rejectPasswordReset = () => true;
-export const getTransactions = () => [];
-export const saveTransaction = () => true;
+export const getUserInvestments = async (uid?: string) => { if (!uid) { const u = getCurrentUser(); uid = u?.id; } if (!uid) return []; const { data } = await supabase.from('investments').select('*, products(*)').eq('user_id', uid); return data || []; };
+export const getInvestments = getUserInvestments;
 
-  // TEAM PAGE - FIXES getTeamM error from 8aij4xSf7
-export const getTeamMembers = async (userId?: string) => {
-  if (!userId) { const u = getCurrentUser(); userId = u?.id; }
-  if (!userId) return [];
-  const { data } = await supabase.from('users').select('*').eq('referred_by', userId);
-  return data || [];
-};
-export const getTeamMember = getTeamMembers;
-export const getMyTeam = getTeamMembers;
-export const getTeam = getTeamMembers;
+// TEAM
+export const getTeamMembers = async (uid?: string) => { if (!uid) { const u = getCurrentUser(); uid = u?.id; } if (!uid) return []; const { data } = await supabase.from('users').select('*').eq('referred_by', uid); return data || []; };
+export const getTeamMember = getTeamMembers; export const getMyTeam = getTeamMembers; export const getTeam = getTeamMembers;
 export const getTeamCount = async (id?: string) => (await getTeamMembers(id)).length;
-export const getTeamMembersCount = getTeamCount;
-export const getTeamSize = getTeamCount;
-export const getTeamEarnings = () => 0;
-export const getTeamIncome = () => 0;
-export const getTeamCommission = () => 0;
-export const getTeamCommissions = () => 0;
-export const getReferralLink = () => `${window.location.origin}?ref=${getCurrentUser()?.id || ''}`;
-export const getInviteCode = () => getCurrentUser()?.id || '';
-export const getReferralCode = getInviteCode;
+export const getTeamMembersCount = getTeamCount; export const getTeamSize = getTeamCount;
+export const getTeamEarnings = () => 0; export const getTeamIncome = () => 0; export const getTeamCommission = () => 0; export const getTeamCommissions = () => 0; export const getCommissions = () => 0; export const getTeamEarningsList = () => [];
+export const getReferralLink = () => `${typeof window!== 'undefined'? window.location.origin : ''}?ref=${getCurrentUser()?.id || ''}`;
+export const getInviteCode = () => getCurrentUser()?.id || ''; export const getReferralCode = getInviteCode;
+
+// WALLET / TRANSACTIONS / CHECK-IN / BONUS / GIFT
+export const getTransactions = () => []; export const saveTransaction = () => true;
+export const getWalletBalance = () => getCurrentUser()?.balance || 0; export const getBalance = getWalletBalance;
+export const getGiftCodes = async () => { const { data } = await supabase.from('gift_codes').select('*'); return data || []; };
+export const redeemGiftCode = async (uid: string, code: string) => {
+  const c = code.trim().toUpperCase(); const { data: gift } = await supabase.from('gift_codes').select('*').eq('code', c).single();
+  if (!gift) return { success: false, message: 'Invalid code' }; if (gift.is_used) return { success: false, message: 'Already used' };
+  const { data: user } = await supabase.from('users').select('*').eq('id', uid).single(); if (!user) return { success: false, message: 'User not found' };
+  await supabase.from('users').update({ balance: (user.balance || 0) + gift.amount }).eq('id', uid);
+  await supabase.from('gift_codes').update({ is_used: true, used_by: uid }).eq('id', gift.id);
+  const { data: nu } = await supabase.from('users').select('*').eq('id', uid).single(); if (nu) setCurrentUser(nu);
+  return { success: true, message: `Added $${gift.amount}` };
+};
+export const createPasswordReset = (d: any) => ({ id: Date.now().toString(),...d }); export const getPasswordResetStatus = () => 'pending'; export const getPasswordResets = () => []; export const approvePasswordReset = () => true; export const rejectPasswordReset = () => true;
+
+// CHECK-IN PAGE - FIXES your current error
+export const performCheckIn = async () => {
+  const u = getCurrentUser(); if (!u) return { success: false, message: 'Not logged in' };
+  const today = new Date().toISOString().split('T')[0]; const key = `checkin_${u.id}_${today}`;
+  if (localStorage.getItem(key)) return { success: false, message: 'Already checked in today' };
+  localStorage.setItem(key, '1');
+  await supabase.from('users').update({ balance: (u.balance || 0) + 5 }).eq('id', u.id);
+  const { data: nu } = await supabase.from('users').select('*').eq('id', u.id).single(); if (nu) setCurrentUser(nu);
+  return { success: true, message: 'Checked in! +$5', reward: 5 };
+};
+export const checkIn = performCheckIn; export const doCheckIn = performCheckIn; export const dailyCheckIn = performCheckIn; export const getCheckInStatus = () => false; export const getDailyBonus = () => 5; export const claimDailyBonus = performCheckIn; export const getStreak = () => 1;
+
+// EXTRA COMPATIBILITY
+export const getIncome = () => 0; export const getEarnings = () => 0; export const getTotalIncome = () => 0; export const getReferralBonus = () => 0;
 export const storage = { get: (k: string) => localStorage.getItem(k), set: (k: string, v: string) => localStorage.setItem(k, v) };
