@@ -83,8 +83,7 @@ export const getWithdrawals = getWithdrawHistory; export const getWithdrawalHist
 // RECHARGE - FIXES GWbK9KknT + ProfilePage.tsx 7:30
 export const getRechargeOrders = () => []; export const getRechargeHistory = () => []; export const getRechargeList = () => []; export const createRechargeOrder = () => ({ success: true }); export const recharge = createRechargeOrder;
 
-// PROFILE - only updateUser is needed, others already exist at top
-export const updateUser = (u:any) => { try { saveCurrentUser(u); const users = JSON.parse(localStorage.getItem('users')||'[]'); const i = users.findIndex((x:any)=>x.id===u.id); if(i>=0){ users[i]=u; localStorage.setItem('users', JSON.stringify(users)); } return u; } catch { return u; } };
+
 
 
 
