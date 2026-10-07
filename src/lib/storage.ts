@@ -62,7 +62,14 @@ export const getCurrentUser = () => {
 export const getTeamMembers = (phone?: string) => {
   return [] as any[]
 }
-export const getTeamM = () => [] as any[]
+export const getTeamMembers = (phone?: string) => {
+  return { level1: [] as any[], level2: [] as any[], level3: [] as any[] }
+}
+export const getTeamCommissions = (phone?: string) => {
+  return [] as any[]
+}
+export const getTeamCommission = getTeamCommissions
+export const getTeamCounts = () => ({ level1: 0, level2: 0, level3: 0 })
 export const getUsers = () => {
   try { 
     return JSON.parse(localStorage.getItem('legend_users') || '[]') 
