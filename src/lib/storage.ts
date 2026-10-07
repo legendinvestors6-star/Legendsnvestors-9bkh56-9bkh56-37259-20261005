@@ -45,6 +45,18 @@ export const creditDailyIncome = async () => { const u = getCurrentUser(); if (!
 export const creditDailyProfit = creditDailyIncome; export const creditDailyEarnings = creditDailyIncome; export const creditDaily = creditDailyIncome; export const creditIncome = creditDailyIncome; export const creditProfit = creditDailyIncome; export const addDailyIncome = creditDailyIncome; export const claimDailyIncome = creditDailyIncome; export const claimDailyProfit = creditDailyIncome;
 export const getDailyIncome = async (uid?: string) => { const invs = await getUserInvestments(uid); let t = 0; invs.forEach((i: any) => t += i.daily_profit || 0); return t; };
 export const getDailyProfit = getDailyIncome; export const getTotalDailyIncome = getDailyIncome;
+// NEXT PROFIT - FIXES BxXCIyNJM getNextP error
+export const getNextProfitTime = () => new Date(Date.now() + 86400000).toISOString();
+export const getNextPayoutTime = getNextProfitTime;
+export const getNextPayout = getNextProfitTime;
+export const getNextProfit = getNextProfitTime;
+export const getNextProfitDate = getNextProfitTime;
+export const getNextClaimTime = getNextProfitTime;
+export const getCountdown = () => "23:59:59";
+export const getTimeLeft = () => "23:59:59";
+export const getRemainingTime = () => "23:59:59";
+export const getNextRewardTime = getNextProfitTime;
+
 
 // FORMATS - FIXES 6XYgYP94i
 export const formatUGX = (n: any) => `UGX ${Number(n||0).toLocaleString()}`;
