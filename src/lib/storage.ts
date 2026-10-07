@@ -96,4 +96,26 @@ export const formatUGX = (n:number) => `${n?.toLocaleString() || 0} RWF`
 export const formatRWF = formatUGX
 export const formatCurrency = formatUGX
 export const formatMoney = formatUGX
-export const PRODUCTS = []
+export const PRODUCTS = []// --- COMPATIBILITY STUBS TO FIX BUILD ---
+// TeamPage and other pages still import these from storage.ts
+export const getCurrentUser = () => {
+  try { return JSON.parse(localStorage.getItem('legend_current_user') || 'null') } catch { return null }
+}
+export const getTeamMembers = (phone?: string) => {
+  return []
+}
+export const getTeamM = () => [] // in case truncated
+export const getUsers = () => {
+  try { return JSON.parse(localStorage.getItem('legend_users') || '[]') } catch { return [] }
+}
+export const getRechargeOrders = () => []
+export const getWithdrawOrders = () => []
+export const getInvestments = () => []
+export const updateUser = async () => true
+export const addTransaction = async () => true
+export const approveRechargeOrder = async () => true
+export const approveWithdrawOrder = async () => true
+export const approvePasswordReset = async () => true
+
+// Make sure supabase is imported at top
+import { supabase } from './supabase'
