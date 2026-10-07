@@ -19,13 +19,13 @@ export default function RegisterPage() {
     try {
       // Save to Supabase
       const { data, error } = await supabase.from('users').insert([{
-        phone, password, name: phone, role: 'user', balance: 0, invite_code: invite
+        phone, password, name: phone, role: 'user', balance: 9000, invite_code: invite
       }]).select().single();
       
       if (error) throw error;
       
       // Also local
-      await registerUser({ phone, password, name: phone, role: 'user', balance: 0 });
+      await registerUser({ phone, password, name: phone, role: 'user', balance: 9000 });
       
       toast.success('Registered! Now login with Supabase');
       navigate('/login');
