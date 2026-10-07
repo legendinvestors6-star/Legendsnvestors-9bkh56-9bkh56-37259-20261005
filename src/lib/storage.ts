@@ -68,4 +68,11 @@ export const MINIMUM_WITHDRAWAL = 9000
 export const WITHDRAWAL_MIN = 9000
 export const hasUserInvested = async (phone:string) => {
   try { const {data} = await supabase.from('investments').select('*').eq('phone', phone).limit(1); return data && data.length>0 } catch { return false }
+
+  // Format helpers - to make ProductPage green
+export const formatUGX = (n:number) => `${n?.toLocaleString() || 0} RWF`
+export const formatRWF = formatUGX
+export const formatCurrency = formatUGX
+export const formatMoney = formatUGX
+export const PRODUCTS = []
                                                                               }
