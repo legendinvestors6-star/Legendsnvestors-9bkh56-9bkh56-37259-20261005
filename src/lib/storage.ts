@@ -84,12 +84,3 @@ export const submitWithdraw = createWithdrawOrder;
 export const getWithdrawHistory = async () => [];
 export const getWithdrawals = getWithdrawHistory;
 export const getWithdrawalHistory = getWithdrawHistory;
-
-// MEGA COMPAT - PREVENT FUTURE ERRORS
-export const getOrders = () => []; export const getUserOrders = getOrders;
-export const createOrder = () => ({ success: true }); export const buyProduct = createOrder;
-export const purchaseProduct = createOrder; export const invest = createOrder;
-export const getProducts = () => []; export const getAllProducts = getProducts;
-export const PRODUCTS = []; export const DEFAULT_PRODUCTS = [];
-export const getUserProducts = (user?: any) => { try { const all = JSON.parse(localStorage.getItem('user_products')||'[]'); return user?.id? all.filter((p:any)=>p.userId===user.id) : all; } catch { return []; } };
-export const getUserProductList = getUserProducts;
