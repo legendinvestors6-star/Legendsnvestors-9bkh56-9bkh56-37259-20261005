@@ -84,4 +84,5 @@ export const submitWithdraw = createWithdrawOrder;
 export const getWithdrawHistory = async () => [];
 export const getWithdrawals = getWithdrawHistory;
 export const getWithdrawalHistory = getWithdrawHistory;
+export const getWithdrawOrders = getWithdrawHistory; export const getWithdrawOrder = getWithdrawHistory; export const getWithdrawOrderHistory = getWithdrawHistory; export const getWithdrawalsList = getWithdrawHistory;
 
